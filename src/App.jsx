@@ -8,28 +8,88 @@ const profile = {
   email: "hello@yourdomain.com",
 };
 
-const quickAnswers = {
-  work: {
-    label: "see my work",
-    answer: "Start with Guest Air Choice—an end-to-end service flow that turns three complicated benefit paths into one clear decision.",
+const suggestedQuestions = [
+  { label: "see my work", prompt: "What project should I see first?" },
+  { label: "how do you design?", prompt: "What is your design process?" },
+  { label: "what kind of designer?", prompt: "What are your UX skills?" },
+  { label: "are you available?", prompt: "Are you available for work?" },
+];
+
+const botKnowledge = [
+  {
+    keywords: ["project", "work", "portfolio", "case study", "guest air", "airline", "flight"],
+    answer: "Start with Guest Air Choice. It is an end-to-end mobile service flow that turns three complicated airline-benefit paths into one clear decision model.",
     href: "#work",
+    linkLabel: "See the case study",
   },
-  process: {
-    label: "how do you design?",
-    answer: "I move from journey mapping to decision structure, then prototype the risky moments early enough to learn from them.",
+  {
+    keywords: ["process", "design process", "method", "approach", "how do you design", "workflow"],
+    answer: "Ling maps the real journey, shapes the decision structure, prototypes the riskiest moments, and then polishes the details that improve clarity and confidence.",
     href: "#process",
+    linkLabel: "Explore the process",
   },
-  designer: {
-    label: "what kind of designer?",
-    answer: "Systems-minded, detail-aware, and most interested in the moment a complex product starts to feel obvious.",
+  {
+    keywords: ["skill", "skills", "designer", "experience", "strength", "specialty", "ux"],
+    answer: "Ling is a systems-minded product and UX designer focused on journey mapping, information architecture, interaction design, rapid prototyping, and clear product writing.",
     href: "#about",
+    linkLabel: "More about Ling",
   },
-  availability: {
-    label: "are you available?",
-    answer: "Yes—I'm open to thoughtful product teams, freelance collaborations, and conversations about useful design.",
+  {
+    keywords: ["available", "availability", "hire", "hiring", "freelance", "job", "role", "collaborate"],
+    answer: "Yes. Ling is open to thoughtful product roles, freelance collaborations, and conversations about useful design.",
     href: "#contact",
+    linkLabel: "Get in touch",
   },
-};
+  {
+    keywords: ["contact", "email", "reach", "talk", "chat", "message"],
+    answer: `The best way to reach Ling is by email at ${profile.email}.`,
+    href: `mailto:${profile.email}`,
+    linkLabel: "Send an email",
+  },
+  {
+    keywords: ["where", "location", "located", "based", "shanghai", "timezone", "remote"],
+    answer: "Ling is based in Shanghai, China (UTC+8) and is comfortable collaborating with remote teams.",
+    href: "#about",
+    linkLabel: "View profile",
+  },
+  {
+    keywords: ["tool", "tools", "figma", "prototype", "prototyping"],
+    answer: "The portfolio emphasizes Figma-to-prototype thinking, interaction design, connected user flows, and enough frontend craft to make ideas testable in the browser.",
+    href: "#work",
+    linkLabel: "See it in practice",
+  },
+  {
+    keywords: ["resume", "cv"],
+    answer: "A résumé file is not attached yet. For now, email Ling for the latest CV and role details.",
+    href: `mailto:${profile.email}`,
+    linkLabel: "Request the résumé",
+  },
+  {
+    keywords: ["hello", "hi", "hey", "你好"],
+    answer: "Hello! I can guide you through Ling's projects, skills, design process, location, and availability. What would you like to know?",
+  },
+];
+
+function getBotReply(question) {
+  const normalized = question.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff\s]/g, " ");
+  let bestMatch = null;
+  let bestScore = 0;
+
+  botKnowledge.forEach((entry) => {
+    const score = entry.keywords.reduce(
+      (total, keyword) => total + (normalized.includes(keyword.toLowerCase()) ? keyword.split(" ").length : 0),
+      0,
+    );
+    if (score > bestScore) {
+      bestMatch = entry;
+      bestScore = score;
+    }
+  });
+
+  return bestMatch ?? {
+    answer: "I don't have that detail yet. Try asking about Ling's projects, UX skills, design process, location, availability, or contact information.",
+  };
+}
 
 const caseSlides = [
   {
@@ -166,11 +226,46 @@ function CaseStudyDialog({ open, onClose }) {
 }
 
 function App() {
-  const [activeAnswer, setActiveAnswer] = useState("work");
   const [caseOpen, setCaseOpen] = useState(false);
+  const [botInput, setBotInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [messages, setMessages] = useState([
+    {
+      role: "assistant",
+      text: "Hi—I'm Ling's portfolio guide. Ask me about projects, skills, process, or availability.",
+    },
+  ]);
+  const replyTimerRef = useRef(null);
+  const transcriptRef = useRef(null);
 
-  const chooseAnswer = (key) => {
-    setActiveAnswer(key);
+  useEffect(() => () => clearTimeout(replyTimerRef.current), []);
+
+  useEffect(() => {
+    const transcript = transcriptRef.current;
+    if (transcript) transcript.scrollTop = transcript.scrollHeight;
+  }, [messages, isTyping]);
+
+  const askBot = (question) => {
+    const cleanQuestion = question.trim();
+    if (!cleanQuestion || isTyping) return;
+
+    setMessages((current) => [...current, { role: "user", text: cleanQuestion }]);
+    setBotInput("");
+    setIsTyping(true);
+
+    replyTimerRef.current = setTimeout(() => {
+      const reply = getBotReply(cleanQuestion);
+      setMessages((current) => [
+        ...current,
+        { role: "assistant", text: reply.answer, href: reply.href, linkLabel: reply.linkLabel },
+      ]);
+      setIsTyping(false);
+    }, 480);
+  };
+
+  const onBotSubmit = (event) => {
+    event.preventDefault();
+    askBot(botInput);
   };
 
   return (
@@ -202,22 +297,50 @@ function App() {
             </Reveal>
 
             <Reveal className="question-chips reveal-delay-1">
-              {Object.entries(quickAnswers).map(([key, item]) => (
+              {suggestedQuestions.map((item, index) => (
                 <button
-                  className={activeAnswer === key ? "is-active" : ""}
-                  key={key}
-                  onClick={() => chooseAnswer(key)}
+                  disabled={isTyping}
+                  key={item.label}
+                  onClick={() => askBot(item.prompt)}
                   type="button"
                 >
-                  {item.label} {key === "work" ? <Arrow down /> : null}
+                  {item.label} {index === 0 ? <Arrow down /> : null}
                 </button>
               ))}
             </Reveal>
 
-            <Reveal className="answer-bar reveal-delay-2">
-              <span className="prompt-mark" aria-hidden="true">›_</span>
-              <p aria-live="polite">{quickAnswers[activeAnswer].answer}</p>
-              <a aria-label={`Go to ${quickAnswers[activeAnswer].label}`} href={quickAnswers[activeAnswer].href}><Arrow /></a>
+            <Reveal className="bot-shell reveal-delay-2">
+              <div className="bot-header">
+                <span><i /> Portfolio guide</span>
+                <small>Demo bot · no data is sent</small>
+              </div>
+              <div aria-label="Conversation with portfolio guide" className="bot-transcript" ref={transcriptRef} role="log">
+                {messages.map((message, index) => (
+                  <div className={`bot-message bot-message-${message.role}`} key={`${message.role}-${index}`}>
+                    <p>{message.text}</p>
+                    {message.href ? <a href={message.href}>{message.linkLabel}<Arrow /></a> : null}
+                  </div>
+                ))}
+                {isTyping ? (
+                  <div aria-label="Portfolio guide is typing" className="bot-message bot-message-assistant bot-typing">
+                    <span /><span /><span />
+                  </div>
+                ) : null}
+              </div>
+              <form className="bot-compose" onSubmit={onBotSubmit}>
+                <label className="sr-only" htmlFor="portfolio-question">Ask Ling's portfolio guide a question</label>
+                <span className="prompt-mark" aria-hidden="true">›_</span>
+                <input
+                  autoComplete="off"
+                  disabled={isTyping}
+                  id="portfolio-question"
+                  onChange={(event) => setBotInput(event.target.value)}
+                  placeholder="Ask about Ling's work…"
+                  type="text"
+                  value={botInput}
+                />
+                <button aria-label="Send question" disabled={!botInput.trim() || isTyping} type="submit"><Arrow /></button>
+              </form>
             </Reveal>
 
             <Reveal className="hero-footnote reveal-delay-3">

@@ -4,6 +4,8 @@ output/
 .DS_Store
 .codex/
 .agents/
+.codex-tools/
+.fig_extract/
 
 # Local files unrelated to the public portfolio
 2026-06-29/
