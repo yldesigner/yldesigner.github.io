@@ -41,7 +41,7 @@ img { display: block; max-width: 100%; }
 .icon { width: 16px; height: 16px; flex: 0 0 auto; }
 
 .hero { position: relative; display: grid; min-height: 100svh; place-items: center; overflow: hidden; overflow-anchor: none; padding: 130px 5vw 70px; }
-.hero-inner { position: relative; z-index: 2; width: min(900px, 100%); }
+.hero-inner { position: relative; z-index: 2; width: min(900px, 100%); min-width: 0; }
 .ambient { position: absolute; border-radius: 50%; filter: blur(42px); opacity: 0.72; pointer-events: none; }
 .ambient-one { top: 4%; left: 7%; width: 52vw; height: 50vw; max-width: 740px; max-height: 650px; background: radial-gradient(circle, rgba(210,196,255,.95) 0%, rgba(225,219,255,.54) 42%, transparent 72%); animation: drift-one 14s ease-in-out infinite alternate; }
 .ambient-two { top: -8%; right: -5%; width: 48vw; height: 48vw; max-width: 700px; max-height: 650px; background: radial-gradient(circle, rgba(183,223,255,.92) 0%, rgba(220,238,255,.5) 44%, transparent 72%); animation: drift-two 16s ease-in-out infinite alternate; }
