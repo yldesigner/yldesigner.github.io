@@ -10,63 +10,63 @@ const profile = {
 
 const suggestedQuestions = [
   { label: "see my work", prompt: "What project should I see first?" },
-  { label: "how do you design?", prompt: "What is your design process?" },
-  { label: "what kind of designer?", prompt: "What are your UX skills?" },
-  { label: "are you available?", prompt: "Are you available for work?" },
+  { label: "how do you design?", prompt: "How do you design?" },
+  { label: "what kind of designer?", prompt: "What kind of designer are you?" },
+  { label: "are you available?", prompt: "Are you available?" },
 ];
 
 const botKnowledge = [
   {
     keywords: ["project", "work", "portfolio", "case study", "guest air", "airline", "flight"],
-    answer: "Start with Guest Air Choice. It is an end-to-end mobile service flow that turns three complicated airline-benefit paths into one clear decision model.",
+    answer: "Start with Guest Air Choice. I turned three complicated airline-benefit paths into one clear decision model, then connected the full mobile journey from search to payment.",
     href: "#work",
     linkLabel: "See the case study",
   },
   {
     keywords: ["process", "design process", "method", "approach", "how do you design", "workflow"],
-    answer: "Ling maps the real journey, shapes the decision structure, prototypes the riskiest moments, and then polishes the details that improve clarity and confidence.",
+    answer: "I map the real journey, shape the decision model, and prototype the riskiest moments in Figma. Then I build enough of the interaction to test the idea clearly—less handoff ambiguity, faster learning.",
     href: "#process",
     linkLabel: "Explore the process",
   },
   {
     keywords: ["skill", "skills", "designer", "experience", "strength", "specialty", "ux"],
-    answer: "Ling is a systems-minded product and UX designer focused on journey mapping, information architecture, interaction design, rapid prototyping, and clear product writing.",
+    answer: "I'm a systems-minded product and UX designer. I work between service journeys and interface details, using information architecture, interaction design, prototyping, and clear product writing.",
     href: "#about",
     linkLabel: "More about Ling",
   },
   {
     keywords: ["available", "availability", "hire", "hiring", "freelance", "job", "role", "collaborate"],
-    answer: "Yes. Ling is open to thoughtful product roles, freelance collaborations, and conversations about useful design.",
+    answer: "Yes—I'm open to thoughtful product roles, freelance collaborations, and conversations about useful design. I'm based in Shanghai and comfortable working with remote teams.",
     href: "#contact",
     linkLabel: "Get in touch",
   },
   {
     keywords: ["contact", "email", "reach", "talk", "chat", "message"],
-    answer: `The best way to reach Ling is by email at ${profile.email}.`,
+    answer: `The best way to reach me is by email at ${profile.email}.`,
     href: `mailto:${profile.email}`,
     linkLabel: "Send an email",
   },
   {
     keywords: ["where", "location", "located", "based", "shanghai", "timezone", "remote"],
-    answer: "Ling is based in Shanghai, China (UTC+8) and is comfortable collaborating with remote teams.",
+    answer: "I'm based in Shanghai, China (UTC+8), and I'm comfortable collaborating with remote teams.",
     href: "#about",
     linkLabel: "View profile",
   },
   {
     keywords: ["tool", "tools", "figma", "prototype", "prototyping"],
-    answer: "The portfolio emphasizes Figma-to-prototype thinking, interaction design, connected user flows, and enough frontend craft to make ideas testable in the browser.",
+    answer: "I use Figma for flows and interaction design, then add enough frontend craft to make ideas testable in the browser. It helps me find gaps before they become handoff problems.",
     href: "#work",
     linkLabel: "See it in practice",
   },
   {
     keywords: ["resume", "cv"],
-    answer: "A résumé file is not attached yet. For now, email Ling for the latest CV and role details.",
+    answer: "My résumé file isn't attached yet. Email me for the latest CV and role details.",
     href: `mailto:${profile.email}`,
     linkLabel: "Request the résumé",
   },
   {
     keywords: ["hello", "hi", "hey", "你好"],
-    answer: "Hello! I can guide you through Ling's projects, skills, design process, location, and availability. What would you like to know?",
+    answer: "Hi! Ask me about my projects, strengths, design process, location, or availability.",
   },
 ];
 
@@ -87,7 +87,7 @@ function getBotReply(question) {
   });
 
   return bestMatch ?? {
-    answer: "I don't have that detail yet. Try asking about Ling's projects, UX skills, design process, location, availability, or contact information.",
+    answer: "I don't have that detail yet. Try asking about my projects, UX skills, design process, location, availability, or contact information.",
   };
 }
 
@@ -229,12 +229,8 @@ function App() {
   const [caseOpen, setCaseOpen] = useState(false);
   const [botInput, setBotInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      text: "Hi—I'm Ling's portfolio guide. Ask me about projects, skills, process, or availability.",
-    },
-  ]);
+  const [activePrompt, setActivePrompt] = useState("");
+  const [messages, setMessages] = useState([]);
   const replyTimerRef = useRef(null);
   const transcriptRef = useRef(null);
 
@@ -242,13 +238,15 @@ function App() {
 
   useEffect(() => {
     const transcript = transcriptRef.current;
-    if (transcript) transcript.scrollTop = transcript.scrollHeight;
+    const latestMessage = transcript?.lastElementChild;
+    if (latestMessage) latestMessage.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [messages, isTyping]);
 
-  const askBot = (question) => {
+  const askBot = (question, promptLabel = "") => {
     const cleanQuestion = question.trim();
     if (!cleanQuestion || isTyping) return;
 
+    setActivePrompt(promptLabel);
     setMessages((current) => [...current, { role: "user", text: cleanQuestion }]);
     setBotInput("");
     setIsTyping(true);
@@ -296,12 +294,41 @@ function App() {
               </h1>
             </Reveal>
 
-            <Reveal className="question-chips reveal-delay-1">
+            {messages.length ? (
+              <div aria-label="Conversation with Ling's portfolio guide" aria-live="polite" className="conversation-stack" ref={transcriptRef} role="log">
+                <div className="chat-row chat-row-assistant chat-intro">
+                  <span aria-hidden="true" className="chat-avatar">{profile.initials}</span>
+                  <div className="chat-bubble chat-bubble-assistant">
+                    <p>I&apos;m {profile.name} — a product &amp; UX designer in Shanghai. I turn complex journeys into clear, confident choices.</p>
+                  </div>
+                </div>
+                {messages.map((message, index) => (
+                  <div className={`chat-row chat-row-${message.role}`} key={`${message.role}-${index}`}>
+                    {message.role === "assistant" ? <span aria-hidden="true" className="chat-avatar">{profile.initials}</span> : null}
+                    <div className={`chat-bubble chat-bubble-${message.role}`}>
+                      <p>{message.text}</p>
+                      {message.href ? <a href={message.href}>{message.linkLabel}<Arrow /></a> : null}
+                    </div>
+                  </div>
+                ))}
+                {isTyping ? (
+                  <div className="chat-row chat-row-assistant">
+                    <span aria-hidden="true" className="chat-avatar">{profile.initials}</span>
+                    <div aria-label="Ling's portfolio guide is typing" className="chat-bubble chat-bubble-assistant chat-typing">
+                      <span /><span /><span />
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
+            <Reveal className={`question-chips reveal-delay-1 ${messages.length ? "has-conversation" : ""}`}>
               {suggestedQuestions.map((item, index) => (
                 <button
+                  className={activePrompt === item.label ? "is-active" : ""}
                   disabled={isTyping}
                   key={item.label}
-                  onClick={() => askBot(item.prompt)}
+                  onClick={() => askBot(item.prompt, item.label)}
                   type="button"
                 >
                   {item.label} {index === 0 ? <Arrow down /> : null}
@@ -310,23 +337,6 @@ function App() {
             </Reveal>
 
             <Reveal className="bot-shell reveal-delay-2">
-              <div className="bot-header">
-                <span><i /> Portfolio guide</span>
-                <small>Demo bot · no data is sent</small>
-              </div>
-              <div aria-label="Conversation with portfolio guide" className="bot-transcript" ref={transcriptRef} role="log">
-                {messages.map((message, index) => (
-                  <div className={`bot-message bot-message-${message.role}`} key={`${message.role}-${index}`}>
-                    <p>{message.text}</p>
-                    {message.href ? <a href={message.href}>{message.linkLabel}<Arrow /></a> : null}
-                  </div>
-                ))}
-                {isTyping ? (
-                  <div aria-label="Portfolio guide is typing" className="bot-message bot-message-assistant bot-typing">
-                    <span /><span /><span />
-                  </div>
-                ) : null}
-              </div>
               <form className="bot-compose" onSubmit={onBotSubmit}>
                 <label className="sr-only" htmlFor="portfolio-question">Ask Ling's portfolio guide a question</label>
                 <span className="prompt-mark" aria-hidden="true">›_</span>
@@ -335,13 +345,15 @@ function App() {
                   disabled={isTyping}
                   id="portfolio-question"
                   onChange={(event) => setBotInput(event.target.value)}
-                  placeholder="Ask about Ling's work…"
+                  placeholder={isTyping ? "Ling-bot is thinking…" : "Ask Ling anything…"}
                   type="text"
                   value={botInput}
                 />
                 <button aria-label="Send question" disabled={!botInput.trim() || isTyping} type="submit"><Arrow /></button>
               </form>
             </Reveal>
+
+            <p className="bot-note">This is a local demo bot—nothing you type is sent or saved. <a href={`mailto:${profile.email}`}>Email Ling</a> for a real conversation.</p>
 
             <Reveal className="hero-footnote reveal-delay-3">
               <span>Portfolio · 2026</span>
