@@ -239,7 +239,8 @@ function App() {
   useEffect(() => {
     const transcript = transcriptRef.current;
     const latestMessage = transcript?.lastElementChild;
-    if (latestMessage) latestMessage.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (latestMessage) latestMessage.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "nearest" });
   }, [messages, isTyping]);
 
   const askBot = (question, promptLabel = "") => {
@@ -285,15 +286,6 @@ function App() {
           <div className="ambient ambient-one" />
           <div className="ambient ambient-two" />
           <div className="hero-inner">
-            <Reveal className="hero-statement">
-              <div className="identity-chip" aria-label="Ling Yin is available">
-                <span>{profile.initials}</span><i />
-              </div>
-              <h1>
-                I&apos;m <mark>{profile.name}</mark> — a product &amp; UX designer in Shanghai. I turn complex journeys into <em>clear, confident choices.</em>
-              </h1>
-            </Reveal>
-
             {messages.length ? (
               <div aria-label="Conversation with Ling's portfolio guide" aria-live="polite" className="conversation-stack" ref={transcriptRef} role="log">
                 <div className="chat-row chat-row-assistant chat-intro">
@@ -320,9 +312,18 @@ function App() {
                   </div>
                 ) : null}
               </div>
-            ) : null}
+            ) : (
+              <Reveal className="hero-statement">
+                <div className="identity-chip" aria-label="Ling Yin is available">
+                  <span>{profile.initials}</span><i />
+                </div>
+                <h1>
+                  I&apos;m <mark>{profile.name}</mark> — a product &amp; UX designer in Shanghai. I turn complex journeys into <em>clear, confident choices.</em>
+                </h1>
+              </Reveal>
+            )}
 
-            <Reveal className={`question-chips reveal-delay-1 ${messages.length ? "has-conversation" : ""}`}>
+            <Reveal className="question-chips reveal-delay-1">
               {suggestedQuestions.map((item, index) => (
                 <button
                   className={activePrompt === item.label ? "is-active" : ""}
