@@ -1,0 +1,11 @@
+node_modules/
+dist/
+output/
+.DS_Store
+.codex/
+.agents/
+
+# Local files unrelated to the public portfolio
+2026-06-29/
+feishu-user-auth-qr.png
+scripts/
