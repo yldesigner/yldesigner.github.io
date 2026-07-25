@@ -237,10 +237,18 @@ function App() {
   useEffect(() => () => clearTimeout(replyTimerRef.current), []);
 
   useEffect(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const scrollBehavior = prefersReducedMotion ? "auto" : "smooth";
+
+    if (messages.length === 2) {
+      window.scrollTo({ top: 0, behavior: scrollBehavior });
+      return;
+    }
+    if (messages.length < 3) return;
+
     const transcript = transcriptRef.current;
     const latestMessage = transcript?.lastElementChild;
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (latestMessage) latestMessage.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "nearest" });
+    if (latestMessage) latestMessage.scrollIntoView({ behavior: scrollBehavior, block: "nearest" });
   }, [messages, isTyping]);
 
   const askBot = (question, promptLabel = "") => {

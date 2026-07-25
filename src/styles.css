@@ -40,7 +40,7 @@ img { display: block; max-width: 100%; }
 .pill-nav a:hover { color: var(--ink); background: #fff; }
 .icon { width: 16px; height: 16px; flex: 0 0 auto; }
 
-.hero { position: relative; display: grid; min-height: 100svh; place-items: center; overflow: hidden; padding: 130px 5vw 70px; }
+.hero { position: relative; display: grid; min-height: 100svh; place-items: center; overflow: hidden; overflow-anchor: none; padding: 130px 5vw 70px; }
 .hero-inner { position: relative; z-index: 2; width: min(900px, 100%); }
 .ambient { position: absolute; border-radius: 50%; filter: blur(42px); opacity: 0.72; pointer-events: none; }
 .ambient-one { top: 4%; left: 7%; width: 52vw; height: 50vw; max-width: 740px; max-height: 650px; background: radial-gradient(circle, rgba(210,196,255,.95) 0%, rgba(225,219,255,.54) 42%, transparent 72%); animation: drift-one 14s ease-in-out infinite alternate; }
