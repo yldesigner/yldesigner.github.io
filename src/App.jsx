@@ -32,7 +32,7 @@ const botKnowledge = [
   {
     keywords: ["project", "work", "portfolio", "case study", "guest air", "airline", "flight"],
     answer: "Start with Guest Air Choice. I turned three complicated airline-benefit paths into one clear decision model, then connected the full mobile journey from search to payment.",
-    href: "?page=work",
+    href: "?page=work&case=guest-air-choice",
     linkLabel: "See the case study",
   },
   {
@@ -240,7 +240,9 @@ function CaseStudyDialog({ open, onClose }) {
 
 function App() {
   const [activePage, setActivePage] = useState(getActivePage);
-  const [caseOpen, setCaseOpen] = useState(false);
+  const [caseOpen, setCaseOpen] = useState(
+    () => new URLSearchParams(window.location.search).get("case") === "guest-air-choice",
+  );
   const [botInput, setBotInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [activePrompt, setActivePrompt] = useState("");
@@ -310,11 +312,21 @@ function App() {
     event.preventDefault();
     const nextUrl = new URL(window.location.href);
     nextUrl.searchParams.set("page", page);
+    nextUrl.searchParams.delete("case");
     nextUrl.hash = "";
     window.history.pushState({}, "", nextUrl);
     setActivePage(page);
     setCaseOpen(false);
     window.scrollTo({ top: 0, behavior: "auto" });
+  };
+
+  const closeCaseStudy = () => {
+    setCaseOpen(false);
+    const nextUrl = new URL(window.location.href);
+    if (!nextUrl.searchParams.has("case")) return;
+
+    nextUrl.searchParams.delete("case");
+    window.history.replaceState({}, "", nextUrl);
   };
 
   return (
@@ -525,7 +537,7 @@ function App() {
         <a href="#main">Back to top <Arrow down /></a>
       </footer>
 
-      <CaseStudyDialog open={caseOpen} onClose={() => setCaseOpen(false)} />
+      <CaseStudyDialog open={caseOpen} onClose={closeCaseStudy} />
     </>
   );
 }
