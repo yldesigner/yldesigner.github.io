@@ -8,6 +8,19 @@ const profile = {
   email: "hello@yourdomain.com",
 };
 
+const pages = ["work", "about", "process", "contact"];
+const pageTitles = {
+  work: "Work",
+  about: "About",
+  process: "Process",
+  contact: "Contact",
+};
+
+function getActivePage() {
+  const page = new URLSearchParams(window.location.search).get("page");
+  return pages.includes(page) ? page : "work";
+}
+
 const suggestedQuestions = [
   { label: "see my work", prompt: "What project should I see first?" },
   { label: "how do you design?", prompt: "How do you design?" },
@@ -19,25 +32,25 @@ const botKnowledge = [
   {
     keywords: ["project", "work", "portfolio", "case study", "guest air", "airline", "flight"],
     answer: "Start with Guest Air Choice. I turned three complicated airline-benefit paths into one clear decision model, then connected the full mobile journey from search to payment.",
-    href: "#work",
+    href: "?page=work",
     linkLabel: "See the case study",
   },
   {
     keywords: ["process", "design process", "method", "approach", "how do you design", "workflow"],
     answer: "I map the real journey, shape the decision model, and prototype the riskiest moments in Figma. Then I build enough of the interaction to test the idea clearly—less handoff ambiguity, faster learning.",
-    href: "#process",
+    href: "?page=process",
     linkLabel: "Explore the process",
   },
   {
     keywords: ["skill", "skills", "designer", "experience", "strength", "specialty", "ux"],
     answer: "I'm a systems-minded product and UX designer. I work between service journeys and interface details, using information architecture, interaction design, prototyping, and clear product writing.",
-    href: "#about",
+    href: "?page=about",
     linkLabel: "More about Ling",
   },
   {
     keywords: ["available", "availability", "hire", "hiring", "freelance", "job", "role", "collaborate"],
     answer: "Yes—I'm open to thoughtful product roles, freelance collaborations, and conversations about useful design. I'm based in Singapore and comfortable working with remote teams.",
-    href: "#contact",
+    href: "?page=contact",
     linkLabel: "Get in touch",
   },
   {
@@ -49,13 +62,13 @@ const botKnowledge = [
   {
     keywords: ["where", "location", "located", "based", "singapore", "timezone", "remote"],
     answer: "I'm based in Singapore (UTC+8), and I'm comfortable collaborating with remote teams.",
-    href: "#about",
+    href: "?page=about",
     linkLabel: "View profile",
   },
   {
     keywords: ["tool", "tools", "figma", "prototype", "prototyping"],
     answer: "I use Figma for flows and interaction design, then add enough frontend craft to make ideas testable in the browser. It helps me find gaps before they become handoff problems.",
-    href: "#work",
+    href: "?page=work",
     linkLabel: "See it in practice",
   },
   {
@@ -226,6 +239,7 @@ function CaseStudyDialog({ open, onClose }) {
 }
 
 function App() {
+  const [activePage, setActivePage] = useState(getActivePage);
   const [caseOpen, setCaseOpen] = useState(false);
   const [botInput, setBotInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -235,6 +249,21 @@ function App() {
   const transcriptRef = useRef(null);
 
   useEffect(() => () => clearTimeout(replyTimerRef.current), []);
+
+  useEffect(() => {
+    const syncPage = () => {
+      setActivePage(getActivePage());
+      setCaseOpen(false);
+      window.scrollTo({ top: 0, behavior: "auto" });
+    };
+
+    window.addEventListener("popstate", syncPage);
+    return () => window.removeEventListener("popstate", syncPage);
+  }, []);
+
+  useEffect(() => {
+    document.title = `${pageTitles[activePage]} — ${profile.name}`;
+  }, [activePage]);
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -275,22 +304,41 @@ function App() {
     askBot(botInput);
   };
 
+  const navigateToPage = (event, page) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    event.preventDefault();
+    const nextUrl = new URL(window.location.href);
+    nextUrl.searchParams.set("page", page);
+    nextUrl.hash = "";
+    window.history.pushState({}, "", nextUrl);
+    setActivePage(page);
+    setCaseOpen(false);
+    window.scrollTo({ top: 0, behavior: "auto" });
+  };
+
   return (
     <>
       <a className="skip-link" href="#main">Skip to content</a>
 
       <header className="site-header">
-        <a className="brand" href="#top" aria-label={`${profile.name} home`}>{profile.name}</a>
+        <a className="brand" href="?page=work" aria-label={`${profile.name} home`} onClick={(event) => navigateToPage(event, "work")}>{profile.name}</a>
         <nav className="pill-nav" aria-label="Primary navigation">
-          <a href="#work">Work</a>
-          <a href="#about">About</a>
-          <a href="#process">Process</a>
-          <a href="#contact">Contact</a>
+          {pages.map((page) => (
+            <a
+              aria-current={activePage === page ? "page" : undefined}
+              href={`?page=${page}`}
+              key={page}
+              onClick={(event) => navigateToPage(event, page)}
+            >
+              {pageTitles[page]}
+            </a>
+          ))}
         </nav>
       </header>
 
-      <main id="main">
-        <section className="hero" id="top">
+      <main className={`page-shell page-${activePage}`} id="main">
+        <section className="hero" hidden={activePage !== "work"} id="top">
           <div className="ambient ambient-one" />
           <div className="ambient ambient-two" />
           <div className="hero-inner">
@@ -371,10 +419,10 @@ function App() {
           </div>
         </section>
 
-        <section className="work" id="work" aria-labelledby="work-title">
+        <section className="work" hidden={activePage !== "work"} id="work" aria-labelledby="work-title">
           <div className="work-intro">
             <p className="section-label">Selected work</p>
-            <h2 id="work-title">One end-to-end case,<br /><em>three design lenses.</em></h2>
+            <h2 id="work-title">Three main end to end <em>projects</em></h2>
           </div>
 
           {caseSlides.map((project, index) => (
@@ -401,7 +449,7 @@ function App() {
           ))}
         </section>
 
-        <section className="about" id="about" aria-labelledby="about-title">
+        <section className="about" hidden={activePage !== "about"} id="about" aria-labelledby="about-title">
           <div className="about-heading">
             <p className="section-label">Beyond the screens</p>
             <h2 id="about-title">A designer who likes the <em>in-between.</em></h2>
@@ -446,7 +494,7 @@ function App() {
           </div>
         </section>
 
-        <section className="process-section" id="process" aria-labelledby="process-title">
+        <section className="process-section" hidden={activePage !== "process"} id="process" aria-labelledby="process-title">
           <div className="process-heading">
             <p className="section-label">How I work</p>
             <h2 id="process-title">Structure first.<br /><em>Then make it feel natural.</em></h2>
@@ -460,7 +508,7 @@ function App() {
           </div>
         </section>
 
-        <section className="contact" id="contact">
+        <section className="contact" hidden={activePage !== "contact"} id="contact">
           <div className="contact-glow" />
           <div className="contact-inner">
             <p className="section-label">Have a useful problem?</p>
@@ -474,7 +522,7 @@ function App() {
       <footer>
         <span>© 2026 {profile.name}</span>
         <span>Designed and built with care</span>
-        <a href="#top">Back to top <Arrow down /></a>
+        <a href="#main">Back to top <Arrow down /></a>
       </footer>
 
       <CaseStudyDialog open={caseOpen} onClose={() => setCaseOpen(false)} />
