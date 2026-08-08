@@ -4,7 +4,7 @@ const profile = {
   name: "Ling Yin",
   initials: "YL",
   role: "Product & UX Designer",
-  location: "Shanghai, China",
+  location: "Singapore",
   email: "hello@yourdomain.com",
 };
 
@@ -36,7 +36,7 @@ const botKnowledge = [
   },
   {
     keywords: ["available", "availability", "hire", "hiring", "freelance", "job", "role", "collaborate"],
-    answer: "Yes—I'm open to thoughtful product roles, freelance collaborations, and conversations about useful design. I'm based in Shanghai and comfortable working with remote teams.",
+    answer: "Yes—I'm open to thoughtful product roles, freelance collaborations, and conversations about useful design. I'm based in Singapore and comfortable working with remote teams.",
     href: "#contact",
     linkLabel: "Get in touch",
   },
@@ -47,8 +47,8 @@ const botKnowledge = [
     linkLabel: "Send an email",
   },
   {
-    keywords: ["where", "location", "located", "based", "shanghai", "timezone", "remote"],
-    answer: "I'm based in Shanghai, China (UTC+8), and I'm comfortable collaborating with remote teams.",
+    keywords: ["where", "location", "located", "based", "singapore", "timezone", "remote"],
+    answer: "I'm based in Singapore (UTC+8), and I'm comfortable collaborating with remote teams.",
     href: "#about",
     linkLabel: "View profile",
   },
@@ -299,7 +299,7 @@ function App() {
                 <div className="chat-row chat-row-assistant chat-intro">
                   <span aria-hidden="true" className="chat-avatar">{profile.initials}</span>
                   <div className="chat-bubble chat-bubble-assistant">
-                    <p>I&apos;m {profile.name} — a product &amp; UX designer in Shanghai. I turn complex journeys into clear, confident choices.</p>
+                    <p>I&apos;m {profile.name} — a product &amp; UX designer in Singapore. I turn complex journeys into clear, confident choices.</p>
                   </div>
                 </div>
                 {messages.map((message, index) => (
@@ -326,7 +326,7 @@ function App() {
                   <span>{profile.initials}</span><i />
                 </div>
                 <h1>
-                  I&apos;m <mark>{profile.name}</mark> — a product &amp; UX designer in Shanghai. I turn complex journeys into <em>clear, confident choices.</em>
+                  I&apos;m <mark>{profile.name}</mark> — a product &amp; UX designer in Singapore. I turn complex journeys into <em>clear, confident choices.</em>
                 </h1>
               </Reveal>
             )}
@@ -436,7 +436,7 @@ function App() {
 
             <Reveal className="bento-card location-card reveal-delay-2">
               <span className="location-ring" aria-hidden="true" />
-              <div><p>Shanghai, China</p><span>UTC+8 · Remote friendly</span></div>
+              <div><p>Singapore</p><span>UTC+8 · Remote friendly</span></div>
             </Reveal>
 
             <Reveal className="bento-card link-card reveal-delay-3">
